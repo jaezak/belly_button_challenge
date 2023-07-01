@@ -1,22 +1,91 @@
 
-//1. Use D3 library to read in samples.json from the API.//
-const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
+d3.json("data/samples.json").then(data => {
+    console.log(data)
+    names = data.names
 
-// Promise Pending
-const dataPromise = d3.json(url);
-console.log("Data Promise: ", dataPromise);
+    let dropdown = d3.select("#selDataset");
 
-// Fetch the JSON data and console log it
-d3.json(url).then(function(data) {
-  console.log(data);
+    for (let i = 0; i < names.length; i++) {
+        dropdown
+            .append("option")
+            .text(names[i])
+            .property("value", names[i]);
+    };
+
+    buildMetadata(names[0])
+    buildCharts(names[0])
+
 });
 
+function optionChanged(id) {
+    buildMetadata(id)
+}
 
-//2. Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
+function buildMetadata(id) {
+    d3.json("data/samples.json").then(data => {
+        metadata = data.metadata
+        let resultArray = metadata.filter(sampleObj => sampleObj.id == id);
+        let result = resultArray[0];
+        let box = d3.select("#sample-metadata");
+
+        box.html("")
+        Object.entries(result).forEach(([key, value]) => {
+            box.append("h6").text(`${key.toUpperCase()}: ${value}`);
+        });
+    })
+}
+
+function buildCharts(id) {
+    d3.json("data/samples.json").then(data => {
+        samples = data.samples
+        let resultArray = samples.filter(sampleObj => sampleObj.id == id);
+        let result = resultArray[0];
 
 
-// Use sample_values as the values for the bar chart.
+        let otu_ids = result.otu_ids;
+        let otu_labels = result.otu_labels;
+        let sample_values = result.sample_values;
 
-// Use otu_ids as the labels for the bar chart.
+        let barData = [
+            {
+              y: otu_ids.slice(0, 10).map(otuID => `OTU ${otuID}`).reverse(),
+              x: sample_values.slice(0, 10).reverse(),
+              text: otu_labels.slice(0, 10).reverse(),
+              type: "bar",
+              orientation: "h",
+            }
+          ];
+      
+          let barLayout = {
+            title: "Top 10 Bacteria Cultures Found",
+            margin: { t: 30, l: 150 }
+          };
+      
+          Plotly.newPlot("bar", barData, barLayout);
 
-// Use otu_labels as the hovertext for the chart.
+          let bubbleLayout = {
+            title: "Bacteria Cultures Per Sample",
+            margin: { t: 0 },
+            hovermode: "closest",
+            xaxis: { title: "OTU ID" },
+            margin: { t: 30 }
+          };
+      
+          let bubbleData = [
+            {
+              x: otu_ids,
+              y: sample_values,
+              text: otu_labels,
+              mode: "markers",
+              marker: {
+                size: sample_values,
+                color: otu_ids,
+                colorscale: "Earth"
+              }
+            }
+          ];
+      
+          Plotly.newPlot("bubble", bubbleData, bubbleLayout);
+        
+    })
+}
