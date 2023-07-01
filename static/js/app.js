@@ -1,5 +1,5 @@
 
-d3.json("data/samples.json").then(data => {
+d3.json("samples.json").then(data => {
     console.log(data)
     names = data.names
 
@@ -22,7 +22,7 @@ function optionChanged(id) {
 }
 
 function buildMetadata(id) {
-    d3.json("data/samples.json").then(data => {
+    d3.json("samples.json").then(data => {
         metadata = data.metadata
         let resultArray = metadata.filter(sampleObj => sampleObj.id == id);
         let result = resultArray[0];
@@ -36,7 +36,7 @@ function buildMetadata(id) {
 }
 
 function buildCharts(id) {
-    d3.json("data/samples.json").then(data => {
+    d3.json("samples.json").then(data => {
         samples = data.samples
         let resultArray = samples.filter(sampleObj => sampleObj.id == id);
         let result = resultArray[0];
